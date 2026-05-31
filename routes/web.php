@@ -25,6 +25,7 @@ Route::middleware(TrackDailyVisit::class)->group(function () {
     Route::get('/posts/{slug}', [BlogController::class, 'showPost'])->name('posts.show');
     Route::get('/categories/{slug}', [BlogController::class, 'showCategory'])->name('categories.show');
     Route::get('/about', [BlogController::class, 'about'])->name('about');
+    Route::get('/work', [BlogController::class, 'work'])->name('work');
     Route::get('/contact', [BlogController::class, 'contact'])->name('contact');
     Route::post('/contact', [BlogController::class, 'storeContact'])->name('contact.store');
 });

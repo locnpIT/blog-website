@@ -16,14 +16,19 @@ class BlogController extends Controller
 {
     public function home(): View
     {
-        $posts = Post::with('category')->published()->latest('published_at')->paginate(9);
+        $posts = Post::with('category')->published()->latest('published_at')->paginate(9)->onEachSide(1);
+        $featuredPosts = Post::with('category')->published()->latest('published_at')->take(4)->get();
+        $categories = Category::withCount('posts')->orderBy('name')->get();
+        $profile = Profile::query()->first();
 
-        return view('public.home', compact('posts'));
+        return view('public.home', compact('posts', 'featuredPosts', 'categories', 'profile'));
     }
 
     public function showPost(string $slug): View
     {
         $post = Post::with('category')->published()->where('slug', $slug)->firstOrFail();
+        $profile = Profile::query()->first();
+        $sidebarCategories = Category::withCount('posts')->orderBy('name')->get();
 
         $relatedPosts = Post::with('category')
             ->published()
@@ -33,15 +38,17 @@ class BlogController extends Controller
             ->take(3)
             ->get();
 
-        return view('public.post', compact('post', 'relatedPosts'));
+        return view('public.post', compact('post', 'relatedPosts', 'profile', 'sidebarCategories'));
     }
 
     public function showCategory(string $slug): View
     {
         $category = Category::where('slug', $slug)->firstOrFail();
-        $posts = Post::with('category')->published()->where('category_id', $category->id)->latest('published_at')->paginate(9);
+        $posts = Post::with('category')->published()->where('category_id', $category->id)->latest('published_at')->paginate(9)->onEachSide(1);
+        $profile = Profile::query()->first();
+        $sidebarCategories = Category::withCount('posts')->orderBy('name')->get();
 
-        return view('public.category', compact('category', 'posts'));
+        return view('public.category', compact('category', 'posts', 'profile', 'sidebarCategories'));
     }
 
     public function about(): View
@@ -54,6 +61,11 @@ class BlogController extends Controller
     public function contact(): View
     {
         return view('public.contact');
+    }
+
+    public function work(): View
+    {
+        return view('public.work');
     }
 
     public function storeContact(ContactStoreRequest $request): RedirectResponse

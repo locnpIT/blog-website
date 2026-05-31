@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\PostRequest;
 use App\Models\Category;
 use App\Models\Post;
+use App\Support\WebpImage;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
@@ -32,7 +33,7 @@ class PostController extends Controller
         $data['slug'] = Post::generateUniqueSlug($data['title']);
 
         if ($request->hasFile('thumbnail')) {
-            $data['thumbnail'] = $request->file('thumbnail')->store('posts', 'public');
+            $data['thumbnail'] = WebpImage::store($request->file('thumbnail'), 'posts');
         }
 
         Post::create($data);
@@ -57,7 +58,7 @@ class PostController extends Controller
                 Storage::disk('public')->delete($post->thumbnail);
             }
 
-            $data['thumbnail'] = $request->file('thumbnail')->store('posts', 'public');
+            $data['thumbnail'] = WebpImage::store($request->file('thumbnail'), 'posts');
         }
 
         $post->update($data);

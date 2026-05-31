@@ -1,67 +1,79 @@
 @extends('layouts.public')
+@section('title', $post->title . ' - ' . ($globalSettings['site_title'] ?? 'PhuocLocBlog'))
+@section('meta_description', \Illuminate\Support\Str::limit(strip_tags($post->excerpt ?: $post->content), 155))
+@section('og_type', 'article')
+
+@section('jsonld')
+<script type="application/ld+json">
+{!! json_encode([
+    '@context' => 'https://schema.org',
+    '@type' => 'BlogPosting',
+    'mainEntityOfPage' => [
+        '@type' => 'WebPage',
+        '@id' => url()->current(),
+    ],
+    'headline' => $post->title,
+    'description' => \Illuminate\Support\Str::limit(strip_tags($post->excerpt ?: $post->content), 155),
+    'datePublished' => optional($post->published_at)?->toAtomString(),
+    'dateModified' => optional($post->updated_at)?->toAtomString(),
+    'author' => [
+        '@type' => 'Person',
+        'name' => $globalSettings['author_name'] ?? 'Phuoc Loc',
+    ],
+    'publisher' => [
+        '@type' => 'Organization',
+        'name' => $globalSettings['site_title'] ?? 'PhuocLocBlog',
+        'logo' => [
+            '@type' => 'ImageObject',
+            'url' => asset('images/PhuocLocBlogLogoHeader.png'),
+        ],
+    ],
+    'image' => $post->thumbnail ? [$post->thumbnail_url] : [asset('images/PhuocLocBlogLogoHeader.png')],
+    'articleSection' => $post->category?->name,
+    'url' => url()->current(),
+], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) !!}
+</script>
+@endsection
 
 @section('content')
-<div class="article-layout">
-    <div class="article-main">
-        <article class="article-shell">
-            <header class="article-header">
-                <a href="{{ route('categories.show', $post->category->slug) }}" class="article-category">{{ $post->category->name }}</a>
-                <h1 class="article-title">{{ $post->title }}</h1>
-                <div class="article-meta-row">
-                    <span>{{ optional($post->published_at)->format('d/m/Y H:i') }}</span>
-                    <span>•</span>
-                    <span>{{ str_word_count(strip_tags($post->content)) > 0 ? ceil(str_word_count(strip_tags($post->content)) / 220) : 1 }} phút đọc</span>
-                </div>
-            </header>
+<div class="content-layout">
+    <article class="post-page">
+        <p class="post-meta mb-2">{{ $post->category->name }} · {{ optional($post->published_at)->format('d/m/Y H:i') }}</p>
+        <h1 class="post-page-title">{{ $post->title }}</h1>
+        <p class="post-page-subtitle">{{ $post->excerpt }}</p>
 
-            @if($post->thumbnail)
-                <div class="article-hero-media">
-                    <img src="{{ $post->thumbnail_url }}" alt="{{ $post->title }}">
-                </div>
-            @endif
-
-            <div class="article-content-wrap">
-                <div class="article-content">{!! $post->content !!}</div>
+        @if($post->thumbnail)
+            <div class="post-page-image">
+                <img src="{{ $post->thumbnail_url }}" alt="{{ $post->title }}">
             </div>
-        </article>
-    </div>
+        @endif
 
-    <aside class="article-aside">
-        <div class="panel sidebar-sticky">
-            <div class="panel-header">Thông tin bài viết</div>
-            <div class="panel-body">
-                <div class="d-flex justify-content-between mb-2"><span class="meta">Chuyên mục</span><strong>{{ $post->category->name }}</strong></div>
-                <div class="d-flex justify-content-between mb-2"><span class="meta">Xuất bản</span><strong>{{ optional($post->published_at)->format('d/m/Y') }}</strong></div>
-                <div class="d-flex justify-content-between"><span class="meta">Tác giả</span><strong>{{ $globalSettings['author_name'] ?? 'Quản trị viên' }}</strong></div>
-                <hr>
-                <a href="{{ route('contact') }}" class="btn btn-dark w-100">Liên hệ hợp tác</a>
-            </div>
-        </div>
+        <div class="post-page-content article-content">{!! $post->content !!}</div>
+    </article>
+
+    <aside class="home-sidebar">
+        @include('public.partials.categories-card', ['categories' => $sidebarCategories ?? collect()])
     </aside>
 </div>
 
 @if(isset($relatedPosts) && $relatedPosts->count())
-<section class="mt-5">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h3 class="section-title mb-0" style="font-size:1.6rem">Bài viết liên quan</h3>
-        <a href="{{ route('categories.show', $post->category->slug) }}" class="btn btn-light border btn-sm">Xem danh mục</a>
-    </div>
-    <div class="row g-4">
+<section class="related-simple">
+    <h2 class="section-title">Bài viết liên quan</h2>
+    <div class="post-list">
         @foreach($relatedPosts as $item)
-            <div class="col-md-4">
-                <article class="recent-card">
+            <article class="post-row">
+                <a href="{{ route('posts.show', $item->slug) }}" class="post-row-media">
                     @if($item->thumbnail)
-                        <img src="{{ $item->thumbnail_url }}" class="recent-thumb" alt="{{ $item->title }}">
+                        <img src="{{ $item->thumbnail_url }}" alt="{{ $item->title }}">
                     @else
-                        <div class="recent-fallback"></div>
+                        <div class="post-row-fallback"></div>
                     @endif
-                    <div class="recent-body">
-                        <a class="recent-title" href="{{ route('posts.show', $item->slug) }}">{{ $item->title }}</a>
-                        <p class="recent-excerpt">{{ \Illuminate\Support\Str::limit($item->excerpt, 90) }}</p>
-                        <div class="meta">{{ optional($item->published_at)->format('d/m/Y') }}</div>
-                    </div>
-                </article>
-            </div>
+                </a>
+                <div class="post-row-body">
+                    <p class="post-row-meta">{{ optional($item->published_at)->format('d/m/Y') }}</p>
+                    <a class="post-row-title" href="{{ route('posts.show', $item->slug) }}">{{ $item->title }}</a>
+                </div>
+            </article>
         @endforeach
     </div>
 </section>
