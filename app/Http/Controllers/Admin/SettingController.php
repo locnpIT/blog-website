@@ -6,15 +6,16 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\SettingsRequest;
 use App\Models\Setting;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\View\View;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class SettingController extends Controller
 {
-    public function edit(): View
+    public function edit(): Response
     {
         $settings = Setting::pluck('value', 'key');
 
-        return view('admin.settings.edit', compact('settings'));
+        return Inertia::render('Admin/Settings/Edit', compact('settings'));
     }
 
     public function update(SettingsRequest $request): RedirectResponse

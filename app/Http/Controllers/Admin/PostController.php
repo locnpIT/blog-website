@@ -9,22 +9,23 @@ use App\Models\Post;
 use App\Support\WebpImage;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\View\View;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class PostController extends Controller
 {
-    public function index(): View
+    public function index(): Response
     {
-        $posts = Post::with('category')->latest()->paginate(10);
+        $posts = Post::with('category')->latest()->paginate(10)->through(fn (Post $post) => $this->postPayload($post));
 
-        return view('admin.posts.index', compact('posts'));
+        return Inertia::render('Admin/Posts/Index', compact('posts'));
     }
 
-    public function create(): View
+    public function create(): Response
     {
         $categories = Category::orderBy('name')->get();
 
-        return view('admin.posts.create', compact('categories'));
+        return Inertia::render('Admin/Posts/Form', compact('categories'));
     }
 
     public function store(PostRequest $request): RedirectResponse
@@ -41,11 +42,14 @@ class PostController extends Controller
         return redirect()->route('admin.posts.index')->with('success', 'Tạo bài viết thành công.');
     }
 
-    public function edit(Post $post): View
+    public function edit(Post $post): Response
     {
         $categories = Category::orderBy('name')->get();
 
-        return view('admin.posts.edit', compact('post', 'categories'));
+        return Inertia::render('Admin/Posts/Form', [
+            'post' => $this->postPayload($post) + ['content' => $post->content],
+            'categories' => $categories,
+        ]);
     }
 
     public function update(PostRequest $request, Post $post): RedirectResponse
@@ -75,5 +79,21 @@ class PostController extends Controller
         $post->delete();
 
         return back()->with('success', 'Đã xóa bài viết.');
+    }
+
+    private function postPayload(Post $post): array
+    {
+        return [
+            'id' => $post->id,
+            'title' => $post->title,
+            'slug' => $post->slug,
+            'excerpt' => $post->excerpt,
+            'content' => $post->content,
+            'thumbnail_url' => $post->thumbnail_url,
+            'category_id' => $post->category_id,
+            'category' => $post->category,
+            'status' => $post->status,
+            'published_at' => optional($post->published_at)->toDateTimeString(),
+        ];
     }
 }

@@ -8,15 +8,18 @@ use App\Models\Profile;
 use App\Support\WebpImage;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\View\View;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class ProfileController extends Controller
 {
-    public function edit(): View
+    public function edit(): Response
     {
         $profile = Profile::query()->firstOrCreate([]);
 
-        return view('admin.profile.edit', compact('profile'));
+        return Inertia::render('Admin/Profile/Edit', [
+            'profile' => $profile->toArray() + ['avatar_url' => $profile->avatar_url],
+        ]);
     }
 
     public function update(ProfileRequest $request): RedirectResponse

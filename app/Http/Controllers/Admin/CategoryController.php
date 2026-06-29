@@ -6,20 +6,21 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\CategoryRequest;
 use App\Models\Category;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\View\View;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class CategoryController extends Controller
 {
-    public function index(): View
+    public function index(): Response
     {
         $categories = Category::withCount('posts')->latest()->paginate(10);
 
-        return view('admin.categories.index', compact('categories'));
+        return Inertia::render('Admin/Categories/Index', compact('categories'));
     }
 
-    public function create(): View
+    public function create(): Response
     {
-        return view('admin.categories.create');
+        return Inertia::render('Admin/Categories/Form');
     }
 
     public function store(CategoryRequest $request): RedirectResponse
@@ -33,9 +34,9 @@ class CategoryController extends Controller
         return redirect()->route('admin.categories.index')->with('success', 'Tạo danh mục thành công.');
     }
 
-    public function edit(Category $category): View
+    public function edit(Category $category): Response
     {
-        return view('admin.categories.edit', compact('category'));
+        return Inertia::render('Admin/Categories/Form', compact('category'));
     }
 
     public function update(CategoryRequest $request, Category $category): RedirectResponse

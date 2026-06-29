@@ -1,25 +1,19 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const slider = document.querySelector('[data-hero-slider]');
+import '../css/app.css';
+import '../css/site.css';
+import { createInertiaApp } from '@inertiajs/vue3';
+import { createApp, h } from 'vue';
 
-    if (!slider) return;
-
-    const slides = Array.from(slider.querySelectorAll('[data-slider-slide]'));
-    const dots = Array.from(slider.querySelectorAll('[data-slider-dot]'));
-    const prev = slider.querySelector('[data-slider-prev]');
-    const next = slider.querySelector('[data-slider-next]');
-    let current = 0;
-
-    const setActive = (index) => {
-        current = (index + slides.length) % slides.length;
-        slides.forEach((slide, i) => slide.classList.toggle('is-active', i === current));
-        dots.forEach((dot, i) => dot.classList.toggle('is-active', i === current));
-    };
-
-    prev?.addEventListener('click', () => setActive(current - 1));
-    next?.addEventListener('click', () => setActive(current + 1));
-    dots.forEach((dot) => {
-        dot.addEventListener('click', () => setActive(Number(dot.dataset.sliderDot)));
-    });
-
-    setInterval(() => setActive(current + 1), 7000);
+createInertiaApp({
+    resolve: (name) => {
+        const pages = import.meta.glob('./Pages/**/*.vue', { eager: true });
+        return pages[`./Pages/${name}.vue`];
+    },
+    setup({ el, App, props, plugin }) {
+        createApp({ render: () => h(App, props) })
+            .use(plugin)
+            .mount(el);
+    },
+    progress: {
+        color: '#111827',
+    },
 });

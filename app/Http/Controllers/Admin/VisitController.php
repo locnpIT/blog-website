@@ -5,11 +5,12 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\DailyVisit;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class VisitController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request): Response
     {
         $query = DailyVisit::query()->orderByDesc('visit_date');
 
@@ -23,10 +24,16 @@ class VisitController extends Controller
 
         $visits = $query->paginate(20)->withQueryString();
 
-        return view('admin.visits.index', [
-            'visits' => $visits,
+        return Inertia::render('Admin/Visits/Index', [
+            'visits' => $visits->through(fn (DailyVisit $visit) => [
+                'id' => $visit->id,
+                'visit_date' => optional($visit->visit_date)->toDateString(),
+                'visit_date_formatted' => optional($visit->visit_date)->format('d/m/Y'),
+                'visit_count' => $visit->visit_count,
+            ]),
             'totalVisits' => (clone $query)->sum('visit_count'),
             'todayVisits' => DailyVisit::query()->whereDate('visit_date', now()->toDateString())->value('visit_count') ?? 0,
+            'filters' => $request->only('from_date', 'to_date'),
         ]);
     }
 }

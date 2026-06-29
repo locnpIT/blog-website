@@ -6,13 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\ChangePasswordRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\View\View;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class SecurityController extends Controller
 {
-    public function editPassword(): View
+    public function editPassword(): Response
     {
-        return view('admin.settings.password');
+        return Inertia::render('Admin/Settings/Password');
     }
 
     public function updatePassword(ChangePasswordRequest $request): RedirectResponse

@@ -6,13 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Models\Contact;
 use App\Models\Post;
 use App\Models\Setting;
-use Illuminate\View\View;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class DashboardController extends Controller
 {
-    public function index(): View
+    public function index(): Response
     {
-        return view('admin.dashboard.index', [
+        return Inertia::render('Admin/Dashboard', [
             'totalPosts' => Post::count(),
             'publishedPosts' => Post::where('status', 'published')->count(),
             'draftPosts' => Post::where('status', 'draft')->count(),
