@@ -25,7 +25,7 @@ COPY vite.config.js ./
 
 RUN npm run build
 
-FROM php:8.3-apache AS runtime
+FROM php:8.4-apache AS runtime
 
 ENV APACHE_DOCUMENT_ROOT=/var/www/html/public \
     COMPOSER_ALLOW_SUPERUSER=1
