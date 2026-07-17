@@ -22,6 +22,7 @@ Route::post('/logout', [LoginController::class, 'logout'])->middleware('auth')->
 
 Route::middleware(TrackDailyVisit::class)->group(function () {
     Route::get('/', [BlogController::class, 'home'])->name('home');
+    Route::get('/search', [BlogController::class, 'search'])->name('search');
     Route::get('/posts/{slug}', [BlogController::class, 'showPost'])->name('posts.show');
     Route::get('/categories/{slug}', [BlogController::class, 'showCategory'])->name('categories.show');
     Route::get('/about', [BlogController::class, 'about'])->name('about');

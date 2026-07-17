@@ -83,7 +83,7 @@ const submit = () => form.post('/contact', {
                 </form>
             </div>
 
-            <aside>
+            <aside class="contact-aside">
                 <div class="simple-card">
                     <div class="contact-info-item">
                         <p class="contact-info-label">Thời gian phản hồi</p>

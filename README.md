@@ -21,6 +21,60 @@ Laravel is a web application framework with expressive, elegant syntax. We belie
 
 Laravel is accessible, powerful, and provides tools required for large, robust applications.
 
+## Docker Deploy
+
+Luồng deploy cho Mac M1 -> Ubuntu -> Cloudflare Tunnel:
+
+1. Build image cho `linux/amd64`.
+2. Test image locally.
+3. Push image lên GHCR hoặc xuất `docker save`.
+4. Ubuntu `docker pull` hoặc `docker load`.
+5. `docker compose up -d`.
+6. Cloudflare Tunnel trỏ vào container `app`.
+
+Build từ Mac M1:
+
+```bash
+docker buildx build \
+  --platform linux/amd64 \
+  -t ghcr.io/<owner>/<repo>:latest \
+  --load \
+  .
+```
+
+Test image:
+
+```bash
+docker run --rm -p 8080:80 \
+  --platform linux/amd64 \
+  --env-file .env.production \
+  ghcr.io/<owner>/<repo>:latest
+```
+
+Push lên GHCR:
+
+```bash
+docker buildx build \
+  --platform linux/amd64 \
+  -t ghcr.io/<owner>/<repo>:latest \
+  --push \
+  .
+```
+
+Xuất file để chuyển tay:
+
+```bash
+docker save ghcr.io/<owner>/<repo>:latest -o my-blog.tar
+```
+
+Trên Ubuntu:
+
+```bash
+docker load -i my-blog.tar
+docker compose -f docker-compose.prod.yml up -d
+docker compose -f docker-compose.prod.yml --profile tunnel up -d
+```
+
 ## Learning Laravel
 
 Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.

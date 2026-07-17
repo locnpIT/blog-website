@@ -7,6 +7,18 @@ defineProps({
         default: () => [],
     },
 });
+
+const paginationLabel = (label) => {
+    if (label === 'pagination.previous' || label.includes('Previous') || label.includes('&laquo;')) {
+        return 'Trước';
+    }
+
+    if (label === 'pagination.next' || label.includes('Next') || label.includes('&raquo;')) {
+        return 'Sau';
+    }
+
+    return label;
+};
 </script>
 
 <template>
@@ -20,7 +32,8 @@ defineProps({
                 'is-active': link.active,
                 'is-disabled': !link.url,
             }"
-            v-html="link.label"
-        />
+        >
+            {{ paginationLabel(link.label) }}
+        </Link>
     </nav>
 </template>

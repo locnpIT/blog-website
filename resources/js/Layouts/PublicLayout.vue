@@ -1,12 +1,47 @@
 <script setup>
-import { ref } from 'vue';
-import { Link, usePage } from '@inertiajs/vue3';
+import { ref, onMounted, onUnmounted } from 'vue';
+import { Link, router, usePage } from '@inertiajs/vue3';
 
 const page = usePage();
 const menuOpen = ref(false);
+const searchQuery = ref(new URLSearchParams(window.location.search).get('q') || '');
+const showBackTop = ref(false);
+const isDark = ref(false);
 
 const isActive = (path) => page.url.split('?')[0] === path;
 const closeMenu = () => { menuOpen.value = false; };
+const submitSearch = () => {
+    const q = searchQuery.value.trim();
+    router.get('/search', q ? { q } : {}, { preserveScroll: false });
+    closeMenu();
+};
+
+const initTheme = () => {
+    const saved = localStorage.getItem('blog-theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    isDark.value = saved === 'dark' || (!saved && prefersDark);
+    document.documentElement.classList.toggle('dark', isDark.value);
+    document.documentElement.classList.toggle('light', !isDark.value);
+};
+
+const toggleTheme = () => {
+    isDark.value = !isDark.value;
+    document.documentElement.classList.toggle('dark', isDark.value);
+    document.documentElement.classList.toggle('light', !isDark.value);
+    localStorage.setItem('blog-theme', isDark.value ? 'dark' : 'light');
+};
+
+const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
+const onScroll = () => { showBackTop.value = window.scrollY > 300; };
+
+onMounted(() => {
+    initTheme();
+    window.addEventListener('scroll', onScroll, { passive: true });
+});
+
+onUnmounted(() => {
+    window.removeEventListener('scroll', onScroll);
+});
 </script>
 
 <template>
@@ -15,7 +50,7 @@ const closeMenu = () => { menuOpen.value = false; };
             <div class="container">
                 <div class="navbar-inner">
                     <Link class="brand" href="/" :aria-label="page.props.globalSettings.site_title || 'PhuocLocBlog'">
-                        <img :src="'/images/PhuocLocBlogLogoHeader.png'" :alt="page.props.globalSettings.site_title || 'PhuocLocBlog'">
+                        <img :src="'/images/PhuocLocBlogLogoHeader.jpg'" :alt="page.props.globalSettings.site_title || 'PhuocLocBlog'">
                     </Link>
 
                     <button class="nav-toggle" @click="menuOpen = !menuOpen" :aria-expanded="menuOpen" aria-label="Mở menu">
@@ -29,6 +64,17 @@ const closeMenu = () => { menuOpen.value = false; };
                             <li><Link class="nav-link" :class="{ active: isActive('/work') }" href="/work" @click="closeMenu">Làm việc</Link></li>
                             <li><Link class="nav-link" :class="{ active: isActive('/contact') }" href="/contact" @click="closeMenu">Liên hệ</Link></li>
                         </ul>
+                        <button
+                            class="theme-toggle"
+                            @click="toggleTheme"
+                            :aria-label="isDark ? 'Chuyển sang giao diện sáng' : 'Chuyển sang giao diện tối'"
+                        >
+                            <i :class="isDark ? 'fas fa-sun' : 'fas fa-moon'"></i>
+                        </button>
+                        <form class="site-search" @submit.prevent="submitSearch">
+                            <input v-model="searchQuery" type="search" placeholder="Tìm bài viết..." aria-label="Tìm bài viết">
+                            <button type="submit" aria-label="Tìm kiếm"><i class="fas fa-search"></i></button>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -47,7 +93,7 @@ const closeMenu = () => { menuOpen.value = false; };
             <div class="container footer-wrap">
                 <div class="footer-grid">
                     <section class="footer-brand-block">
-                        <img class="footer-logo" :src="'/images/PhuocLocBlogLogoHeader.png'" :alt="page.props.globalSettings.site_title || 'PhuocLocBlog'">
+                        <img class="footer-logo" :src="'/images/PhuocLocBlogLogoHeader.jpg'" :alt="page.props.globalSettings.site_title || 'PhuocLocBlog'">
                         <p class="footer-bio">{{ page.props.globalSettings.author_bio || 'Blog chia sẻ về đời sống hằng ngày, kiến thức lập trình, hệ thống web và kinh nghiệm kỹ thuật thực chiến.' }}</p>
                     </section>
 
@@ -77,5 +123,11 @@ const closeMenu = () => { menuOpen.value = false; };
                 </div>
             </div>
         </footer>
+
+        <Transition name="fade">
+            <button v-if="showBackTop" class="back-top" @click="scrollToTop" aria-label="Lên đầu trang">
+                <i class="fas fa-arrow-up"></i>
+            </button>
+        </Transition>
     </div>
 </template>

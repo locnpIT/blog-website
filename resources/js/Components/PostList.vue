@@ -23,7 +23,7 @@ defineProps({
                 </div>
             </Link>
             <div class="post-card-body">
-                <span v-if="post.category?.name" class="post-card-cat">{{ post.category.name }}</span>
+                <Link v-if="post.category" class="post-card-cat" :href="`/categories/${post.category.slug}`">{{ post.category.name }}</Link>
                 <Link class="post-card-title" :href="`/posts/${post.slug}`">{{ post.title }}</Link>
                 <p v-if="post.excerpt" class="post-card-excerpt">{{ post.excerpt }}</p>
                 <span class="post-card-meta">{{ post.published_date || post.created_date }}</span>

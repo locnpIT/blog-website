@@ -10,6 +10,7 @@ use App\Models\Post;
 use App\Models\Profile;
 use App\Models\Setting;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -32,7 +33,7 @@ class BlogController extends Controller
             'profile' => $this->profilePayload($profile),
             'seo' => [
                 'title' => ($settings['site_title'] ?? 'PhuocLocBlog').' - Trang chủ',
-                'description' => $settings['site_description'] ?? ($settings['author_bio'] ?? 'Blog cá nhân chia sẻ về Laravel, hệ thống web, thiết kế giao diện và kinh nghiệm thực chiến.'),
+                'description' => $settings['site_description'] ?? ($settings['author_bio'] ?? 'Blog cá nhân chia sẻ về Java, Spring Boot, hệ thống web và kinh nghiệm kỹ thuật thực chiến.'),
                 'type' => 'website',
             ],
         ]);
@@ -62,6 +63,42 @@ class BlogController extends Controller
                 'title' => $post->title,
                 'description' => Str::limit(strip_tags($post->excerpt ?: $post->content), 155),
                 'type' => 'article',
+                'image' => $post->thumbnail_url,
+            ],
+        ]);
+    }
+
+    public function search(Request $request): Response
+    {
+        $query = trim($request->string('q')->toString());
+        $profile = Profile::query()->first();
+        $sidebarCategories = Category::withCount('posts')->orderBy('name')->get();
+
+        $posts = Post::with('category')
+            ->published()
+            ->when($query !== '', function ($builder) use ($query): void {
+                $builder->where(function ($inner) use ($query): void {
+                    $inner->where('title', 'like', '%'.$query.'%')
+                        ->orWhere('excerpt', 'like', '%'.$query.'%')
+                        ->orWhere('content', 'like', '%'.$query.'%')
+                        ->orWhereHas('category', fn ($category) => $category->where('name', 'like', '%'.$query.'%'));
+                });
+            })
+            ->latest('published_at')
+            ->paginate(9)
+            ->withQueryString()
+            ->onEachSide(1)
+            ->through(fn (Post $post) => $this->postPayload($post));
+
+        return Inertia::render('Public/Search', [
+            'posts' => $posts,
+            'query' => $query,
+            'profile' => $this->profilePayload($profile),
+            'sidebarCategories' => $sidebarCategories,
+            'seo' => [
+                'title' => $query === '' ? 'Tìm kiếm' : 'Tìm kiếm: '.$query,
+                'description' => 'Tìm kiếm bài viết trên PhuocLocBlog.',
+                'type' => 'website',
             ],
         ]);
     }
@@ -116,7 +153,7 @@ class BlogController extends Controller
         return Inertia::render('Public/Work', [
             'seo' => [
                 'title' => 'Làm việc',
-                'description' => 'Hợp tác xây dựng sản phẩm web, Laravel, Vue và hệ thống quản trị nội dung.',
+                'description' => 'Hợp tác xây dựng sản phẩm web, Java, Spring Boot và hệ thống quản trị nội dung.',
                 'type' => 'website',
             ],
         ]);

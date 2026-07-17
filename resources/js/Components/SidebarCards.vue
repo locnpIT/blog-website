@@ -17,9 +17,14 @@ const page = usePage();
 
 <template>
     <div v-if="profile" class="sidebar-card">
+        <h3>Tác giả</h3>
         <img v-if="profile.avatar_url" :src="profile.avatar_url" :alt="profile.full_name" class="sidebar-avatar">
         <p class="sidebar-name">{{ profile.full_name || page.props.globalSettings?.author_name || 'Phuoc Loc' }}</p>
         <p class="sidebar-bio">{{ profile.headline || profile.summary }}</p>
+        <div class="sidebar-actions">
+            <Link class="sidebar-action sidebar-action-primary" href="/contact">Kết nối với tôi</Link>
+            <Link class="sidebar-action sidebar-action-secondary" href="/about">Giới thiệu</Link>
+        </div>
     </div>
 
     <div v-if="categories.length" class="sidebar-card">

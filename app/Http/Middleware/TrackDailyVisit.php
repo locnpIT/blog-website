@@ -13,14 +13,19 @@ class TrackDailyVisit
     {
         if ($request->isMethod('get') && ! $request->is('admin/*')) {
             $today = now()->toDateString();
-            $now = now()->toDateTimeString();
 
-            DB::statement(
-                'INSERT INTO daily_visits (visit_date, visit_count, created_at, updated_at)
-                 VALUES (?, 1, ?, ?)
-                 ON CONFLICT(visit_date)
-                 DO UPDATE SET visit_count = daily_visits.visit_count + 1, updated_at = excluded.updated_at',
-                [$today, $now, $now]
+            DB::table('daily_visits')->upsert(
+                [[
+                    'visit_date' => $today,
+                    'visit_count' => 1,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]],
+                ['visit_date'],
+                [
+                    'visit_count' => DB::raw('visit_count + 1'),
+                    'updated_at' => now(),
+                ],
             );
         }
 

@@ -1,5 +1,23 @@
 <script setup>
 import { Head, useForm } from '@inertiajs/vue3';
+import { Ckeditor } from '@ckeditor/ckeditor5-vue';
+import {
+    BlockQuote,
+    Bold,
+    ClassicEditor,
+    Code,
+    CodeBlock,
+    Essentials,
+    Heading,
+    Italic,
+    Link,
+    List,
+    Paragraph,
+    Table,
+    TableToolbar,
+    Undo,
+} from 'ckeditor5';
+import 'ckeditor5/ckeditor5.css';
 import AdminLayout from '../../../Layouts/AdminLayout.vue';
 
 const props = defineProps({
@@ -22,6 +40,54 @@ const form = useForm({
     thumbnail: null,
     _method: props.post ? 'put' : undefined,
 });
+
+const editorConfig = {
+    licenseKey: 'GPL',
+    plugins: [
+        BlockQuote,
+        Bold,
+        Code,
+        CodeBlock,
+        Essentials,
+        Heading,
+        Italic,
+        Link,
+        List,
+        Paragraph,
+        Table,
+        TableToolbar,
+        Undo,
+    ],
+    toolbar: [
+        'undo',
+        'redo',
+        '|',
+        'heading',
+        '|',
+        'bold',
+        'italic',
+        'code',
+        'link',
+        '|',
+        'bulletedList',
+        'numberedList',
+        'blockQuote',
+        'codeBlock',
+        '|',
+        'insertTable',
+    ],
+    heading: {
+        options: [
+            { model: 'paragraph', title: 'Đoạn văn', class: 'ck-heading_paragraph' },
+            { model: 'heading2', view: 'h2', title: 'Tiêu đề H2', class: 'ck-heading_heading2' },
+            { model: 'heading3', view: 'h3', title: 'Tiêu đề H3', class: 'ck-heading_heading3' },
+            { model: 'heading4', view: 'h4', title: 'Tiêu đề H4', class: 'ck-heading_heading4' },
+        ],
+    },
+    table: {
+        contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells'],
+    },
+};
 
 const submit = () => {
     if (props.post) {
@@ -59,7 +125,12 @@ const submit = () => {
                         </div>
                         <div class="col-12">
                             <label class="form-label">Nội dung</label>
-                            <textarea v-model="form.content" class="form-control" rows="14" :class="{ 'is-invalid': form.errors.content }"></textarea>
+                            <Ckeditor
+                                v-model="form.content"
+                                :editor="ClassicEditor"
+                                :config="editorConfig"
+                                :class="{ 'is-invalid': form.errors.content }"
+                            />
                             <div v-if="form.errors.content" class="invalid-feedback">{{ form.errors.content }}</div>
                         </div>
                         <div class="col-md-6">
