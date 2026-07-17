@@ -1,28 +1,34 @@
 <?php
 
-namespace Database\Factories;
+namespace Database\Seeders;
 
 use App\Models\Category;
-use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 
-/**
- * @extends Factory<Category>
- */
-class CategoryFactory extends Factory
+class DatabaseSeeder extends Seeder
 {
-    protected $model = Category::class;
-
-    public function definition(): array
+    public function run(): void
     {
-        $name = fake()->unique()->randomElement([
-            'Công nghệ', 'Lập trình', 'Du lịch', 'Sách hay', 'Sự nghiệp', 'Khởi nghiệp', 'Tư duy', 'Đời sống',
-        ]);
-
-        return [
-            'name' => $name,
-            'slug' => Str::slug($name),
-            'description' => fake('vi_VN')->sentence(),
+        $categories = [
+            'Công nghệ',
+            'Lập trình',
+            'Du lịch',
+            'Sách hay',
+            'Sự nghiệp',
+            'Khởi nghiệp',
+            'Tư duy',
+            'Đời sống',
         ];
+
+        foreach ($categories as $name) {
+            Category::updateOrCreate(
+                ['slug' => Str::slug($name)],
+                [
+                    'name' => $name,
+                    'description' => "Các bài viết thuộc chủ đề {$name}.",
+                ],
+            );
+        }
     }
 }
