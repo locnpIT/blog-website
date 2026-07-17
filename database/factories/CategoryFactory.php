@@ -1,16 +1,21 @@
 <?php
 
-namespace Database\Seeders;
+namespace Database\Factories;
 
 use App\Models\Category;
-use Illuminate\Database\Seeder;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
-class DatabaseSeeder extends Seeder
+/**
+ * @extends Factory<Category>
+ */
+class CategoryFactory extends Factory
 {
-    public function run(): void
+    protected $model = Category::class;
+
+    public function definition(): array
     {
-        $categories = [
+        $name = $this->faker->unique()->randomElement([
             'Công nghệ',
             'Lập trình',
             'Du lịch',
@@ -19,16 +24,12 @@ class DatabaseSeeder extends Seeder
             'Khởi nghiệp',
             'Tư duy',
             'Đời sống',
-        ];
+        ]);
 
-        foreach ($categories as $name) {
-            Category::updateOrCreate(
-                ['slug' => Str::slug($name)],
-                [
-                    'name' => $name,
-                    'description' => "Các bài viết thuộc chủ đề {$name}.",
-                ],
-            );
-        }
+        return [
+            'name' => $name,
+            'slug' => Str::slug($name),
+            'description' => $this->faker->sentence(),
+        ];
     }
 }
